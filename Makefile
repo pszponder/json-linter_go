@@ -93,6 +93,13 @@ build:
 	mkdir -p $(BUILD_DIR)
 	@go build -o $(BUILD_DIR)/$(APP_NAME) $(CMD_DIR)/$(APP_DIR)
 
+## build/scratch: build the scratch file located in ./scratch/scratch.go
+.PHONY: build/scratch
+build/scratch:
+	@echo "Building scratch executable..."
+	mkdir -p $(BUILD_DIR)
+	@go build -o $(BUILD_DIR)/scratch ./scratch
+
 
 # ==================================================================================== #
 # RUNNING
@@ -101,8 +108,14 @@ build:
 ## run: build and run executable
 .PHONY: run
 run: build
-	@echo "Executing json parser..."
+	@echo "Executing application..."
 	@$(BUILD_DIR)/$(APP_NAME)
+
+## run/scratch: build and run scratch executable
+.PHONY: run/scratch
+run/scratch: build/scratch
+	@echo "Executing scratch..."
+	@$(BUILD_DIR)/scratch
 
 
 # ==================================================================================== #

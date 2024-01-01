@@ -33,6 +33,22 @@ cd ./bin
 ./jv <json filepath>
 ```
 
+## Experimenting w/ a Scratch File
+
+For development purposes, you can create a `./scratch/scratch.go` file and use the `make build/scratch` and `make run/scratch` makefile commands for testing purposes.
+
+Here is what a `scratch.go` file may look like
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// YOUR SCRATCH CODE HERE...
+	fmt.Println("Scratch Works!")
+}
+```
+
 ## Notes / Background
 
 ### JSON Structure
@@ -192,3 +208,4 @@ Here is what an `AST` could look like for the previous example: `var x = 2 + (4 
 - [Rob Pike - Lexical Scanning in Go](https://www.youtube.com/watch?v=HxaD_trXwRE)
 - [Aaron Raff - How to Write a Lexer in Go](https://www.aaronraff.dev/blog/how-to-write-a-lexer-in-go)
 - [Bradford Lamson-Scribner - Building a JSON Parser and Query Tool with Go](https://medium.com/@bradford_hamilton/building-a-json-parser-and-query-tool-with-go-8790beee239a)
+- [Thorsten Ball - Writing an Interpreter in Go](https://interpreterbook.com/)
