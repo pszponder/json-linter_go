@@ -3,7 +3,6 @@ package lexer
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io"
 	"regexp"
 	"unicode"
@@ -85,6 +84,15 @@ func (lxr *Lexer) GetNextToken() Token {
 		case ':':
 			token = createToken(COLON, lxr.Pos, r)
 			return token
+		case '"':
+			strRune, startPos, err := lxr.readString()
+			if err != nil {
+				// Invalid string, return Unknown Token
+				token = createToken(ILLEGAL, startPos, r)
+			} else {
+				token = createToken(STR, startPos, strRune...)
+			}
+			return token
 		default:
 			if isNumberMaybe(r) {
 				lxr.backupReader()
@@ -101,7 +109,6 @@ func (lxr *Lexer) GetNextToken() Token {
 				token = createToken(ILLEGAL, lxr.Pos, r)
 				return token
 			}
-			// TODO: Handle strings
 			// TODO: Handle true, false, null
 		}
 	}
@@ -263,9 +270,38 @@ func (lxr *Lexer) readNumber() ([]rune, LexerPosition, error) {
 	}
 
 	if !isValidJSONNumber(num) {
-		fmt.Printf("Invalid Number: %s\n", string(num))
 		return nil, startPos, errors.New("invalid JSON number")
 	}
 
 	return num, startPos, nil
+}
+
+// readString reads the string from the current position of the Lexer's reader
+func (lxr *Lexer) readString() ([]rune, LexerPosition, error) {
+	var str []rune
+
+	// Store starting position
+	startPos := LexerPosition{
+		Line:   lxr.Pos.Line,
+		Column: lxr.Pos.Column + 1,
+	}
+
+	for {
+		r, err := lxr.advanceReader()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, startPos, err
+		}
+
+		// Break if we hit the next " and it is not escaped
+		if r == '"' && str[len(str)-1] != '\\' {
+			break
+		}
+
+		str = append(str, r)
+	}
+
+	return str, startPos, nil
 }

@@ -1,5 +1,7 @@
 package lexer
 
+import "fmt"
+
 // Define type alias for the type of the token (can later change this to a new type like string)
 type TokenType int
 
@@ -41,4 +43,10 @@ type Token struct {
 	TokType TokenType
 	Lexeme  string // The literal which Token represents
 	TokPos  TokenPosition
+}
+
+// String returns a pretty-printed string representation of the Token.
+func (t Token) String() string {
+	return fmt.Sprintf("Token Type: %-5v\nLexeme:     %-10v\nPosition:   Line %v, Col %v:%v\n",
+		t.TokType, t.Lexeme, t.TokPos.Line, t.TokPos.ColStart, t.TokPos.ColEnd)
 }
