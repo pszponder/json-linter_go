@@ -38,7 +38,7 @@ func CreateLexer(reader io.Reader) *Lexer {
 	return lxrPtr
 }
 
-// TODO: getNextToken scans the Lexer's input to return the next token
+// GetNextToken scans the Lexer's input to return the next token
 func (lxr *Lexer) GetNextToken() Token {
 	var token Token
 
@@ -85,31 +85,17 @@ func (lxr *Lexer) GetNextToken() Token {
 			token = createToken(COLON, lxr.Pos, r)
 			return token
 		case '"':
-			strRune, startPos, err := lxr.readString()
-			if err != nil {
-				// Invalid string, return Unknown Token
-				token = createToken(ILLEGAL, startPos, r)
-			} else {
-				token = createToken(STR, startPos, strRune...)
-			}
-			return token
+			return handleStringToken(lxr, r)
 		default:
 			if isNumberMaybe(r) {
-				lxr.backupReader()
-				numRune, startPos, err := lxr.readNumber()
-				if err != nil {
-					// Invalid number, return Unknown Token
-					token = createToken(ILLEGAL, startPos, r)
-				} else {
-					token = createToken(NUM, startPos, numRune...)
-				}
-				return token
+				return handleNumberToken(lxr, r)
+			} else if unicode.IsLetter(r) {
+				return handleIdentifierToken(lxr, r)
 			} else {
 				// Handle Unknown Tokens
 				token = createToken(ILLEGAL, lxr.Pos, r)
 				return token
 			}
-			// TODO: Handle true, false, null
 		}
 	}
 }
@@ -276,6 +262,21 @@ func (lxr *Lexer) readNumber() ([]rune, LexerPosition, error) {
 	return num, startPos, nil
 }
 
+// handleNumberToken returns NUM or ILLEGAL token
+func handleNumberToken(lxr *Lexer, r rune) Token {
+
+	var token Token
+	lxr.backupReader()
+	numRune, startPos, err := lxr.readNumber()
+	if err != nil {
+		// Invalid number, return Unknown Token
+		token = createToken(ILLEGAL, startPos, r)
+	} else {
+		token = createToken(NUM, startPos, numRune...)
+	}
+	return token
+}
+
 // readString reads the string from the current position of the Lexer's reader
 func (lxr *Lexer) readString() ([]rune, LexerPosition, error) {
 	var str []rune
@@ -304,4 +305,68 @@ func (lxr *Lexer) readString() ([]rune, LexerPosition, error) {
 	}
 
 	return str, startPos, nil
+}
+
+// handleStringToken returns STR or ILLEGAL token
+func handleStringToken(lxr *Lexer, r rune) Token {
+	var token Token
+	strRune, startPos, err := lxr.readString()
+	if err != nil {
+		// Invalid string, return Unknown Token
+		token = createToken(ILLEGAL, startPos, r)
+	} else {
+		token = createToken(STR, startPos, strRune...)
+	}
+	return token
+}
+
+// readIdentifier attempts to read an identifier
+func (lxr *Lexer) readIdentifier() ([]rune, LexerPosition, error) {
+	var ident []rune
+
+	// Store starting position
+	startPos := LexerPosition{
+		Line:   lxr.Pos.Line,
+		Column: lxr.Pos.Column + 1,
+	}
+
+	for {
+		r, err := lxr.advanceReader()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil, startPos, err
+		}
+
+		if unicode.IsSpace(r) || !unicode.IsLetter(r) {
+			lxr.backupReader()
+			break
+		}
+
+		ident = append(ident, r)
+	}
+
+	return ident, startPos, nil
+}
+
+// handleIdentifierToken returns TRUE, FALSE, NULL or ILLEGAL token
+func handleIdentifierToken(lxr *Lexer, r rune) Token {
+	var token Token
+	lxr.backupReader()
+	identRune, startPos, err := lxr.readIdentifier()
+	if err != nil {
+		// Invalid string, return Unknown Token
+		token = createToken(ILLEGAL, startPos, r)
+	} else if string(identRune) == "true" {
+		token = createToken(TRUE, startPos, identRune...)
+	} else if string(identRune) == "false" {
+		token = createToken(FALSE, startPos, identRune...)
+
+	} else if string(identRune) == "null" {
+		token = createToken(NULL, startPos, identRune...)
+	} else {
+		token = createToken(ILLEGAL, startPos, identRune...)
+	}
+	return token
 }
