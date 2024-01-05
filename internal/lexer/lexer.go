@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"regexp"
+	"strings"
 	"unicode"
 )
 
@@ -221,7 +222,7 @@ func isNumberMaybe(r rune) bool {
 func isValidJSONNumber(runes []rune) bool {
 	input := string(runes)
 
-	// TODO: Fix to also accept -.# pattern
+	// TODO: Fix to also accept -.# pattern, also e10 or E10, etc.
 	jsonNumberPattern := `^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$`
 
 	return regexp.MustCompile(jsonNumberPattern).MatchString(input)
@@ -256,7 +257,7 @@ func (lxr *Lexer) readNumber() ([]rune, LexerPosition, error) {
 	}
 
 	if !isValidJSONNumber(num) {
-		return nil, startPos, errors.New("invalid JSON number")
+		return num, startPos, errors.New("invalid JSON number")
 	}
 
 	return num, startPos, nil
@@ -269,6 +270,10 @@ func handleNumberToken(lxr *Lexer, r rune) Token {
 	lxr.backupReader()
 	numRune, startPos, err := lxr.readNumber()
 	if err != nil {
+		if strings.Contains(err.Error(), "invalid JSON number") {
+			token = createToken(ILLEGAL, startPos, numRune...)
+			return token
+		}
 		// Invalid number, return Unknown Token
 		token = createToken(ILLEGAL, startPos, r)
 	} else {
@@ -311,7 +316,7 @@ func (lxr *Lexer) readString() ([]rune, LexerPosition, error) {
 func handleStringToken(lxr *Lexer, r rune) Token {
 	var token Token
 	strRune, startPos, err := lxr.readString()
-	if err != nil {
+	if err != nil || len(strRune) == 0 {
 		// Invalid string, return Unknown Token
 		token = createToken(ILLEGAL, startPos, r)
 	} else {
