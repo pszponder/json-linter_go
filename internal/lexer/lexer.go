@@ -3,7 +3,9 @@ package lexer
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
+	"os"
 	"regexp"
 	"strings"
 	"unicode"
@@ -37,6 +39,34 @@ func CreateLexer(reader io.Reader) *Lexer {
 	}
 
 	return lxrPtr
+}
+
+// Lex is responsible for opening the JSON file specified at the filePath.
+// Returns a slice of Tokens representing the JSON file.
+func Lex(filePath string) []Token {
+	file, err := os.Open(filePath)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return []Token{}
+	}
+	defer file.Close()
+
+	reader := bufio.NewReader(file)
+
+	lxr := CreateLexer(reader)
+
+	var tokens []Token
+	for {
+		tok := lxr.GetNextToken()
+
+		// Break the loop if EOF is reached
+		if tok.TokType == EOF {
+			break
+		}
+
+		tokens = append(tokens, tok)
+	}
+	return tokens
 }
 
 // GetNextToken scans the Lexer's input to return the next token
@@ -222,10 +252,29 @@ func isNumberMaybe(r rune) bool {
 func isValidJSONNumber(runes []rune) bool {
 	input := string(runes)
 
-	// TODO: Fix to also accept -.# pattern, also e10 or E10, etc.
+	// TODO: Fix to also accept -.# pattern, also e#, E#, e-#, or E-#
 	jsonNumberPattern := `^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$`
 
 	return regexp.MustCompile(jsonNumberPattern).MatchString(input)
+}
+
+// handleNumberToken returns NUM or ILLEGAL token
+func handleNumberToken(lxr *Lexer, r rune) Token {
+
+	var token Token
+	lxr.backupReader()
+	numRune, startPos, err := lxr.readNumber()
+	if err != nil {
+		if strings.Contains(err.Error(), "invalid JSON number") {
+			token = createToken(ILLEGAL, startPos, numRune...)
+			return token
+		}
+		// Invalid number, return Unknown Token
+		token = createToken(ILLEGAL, startPos, r)
+	} else {
+		token = createToken(NUM, startPos, numRune...)
+	}
+	return token
 }
 
 // readNumber reads attempts to read in a number and return the read in value
@@ -263,21 +312,15 @@ func (lxr *Lexer) readNumber() ([]rune, LexerPosition, error) {
 	return num, startPos, nil
 }
 
-// handleNumberToken returns NUM or ILLEGAL token
-func handleNumberToken(lxr *Lexer, r rune) Token {
-
+// handleStringToken returns STR or ILLEGAL token
+func handleStringToken(lxr *Lexer, r rune) Token {
 	var token Token
-	lxr.backupReader()
-	numRune, startPos, err := lxr.readNumber()
-	if err != nil {
-		if strings.Contains(err.Error(), "invalid JSON number") {
-			token = createToken(ILLEGAL, startPos, numRune...)
-			return token
-		}
-		// Invalid number, return Unknown Token
+	strRune, startPos, err := lxr.readString()
+	if err != nil || len(strRune) == 0 {
+		// Invalid string, return Unknown Token
 		token = createToken(ILLEGAL, startPos, r)
 	} else {
-		token = createToken(NUM, startPos, numRune...)
+		token = createToken(STR, startPos, strRune...)
 	}
 	return token
 }
@@ -312,15 +355,23 @@ func (lxr *Lexer) readString() ([]rune, LexerPosition, error) {
 	return str, startPos, nil
 }
 
-// handleStringToken returns STR or ILLEGAL token
-func handleStringToken(lxr *Lexer, r rune) Token {
+// handleIdentifierToken returns TRUE, FALSE, NULL or ILLEGAL token
+func handleIdentifierToken(lxr *Lexer, r rune) Token {
 	var token Token
-	strRune, startPos, err := lxr.readString()
-	if err != nil || len(strRune) == 0 {
+	lxr.backupReader()
+	identRune, startPos, err := lxr.readIdentifier()
+	if err != nil {
 		// Invalid string, return Unknown Token
 		token = createToken(ILLEGAL, startPos, r)
+	} else if string(identRune) == "true" {
+		token = createToken(TRUE, startPos, identRune...)
+	} else if string(identRune) == "false" {
+		token = createToken(FALSE, startPos, identRune...)
+
+	} else if string(identRune) == "null" {
+		token = createToken(NULL, startPos, identRune...)
 	} else {
-		token = createToken(STR, startPos, strRune...)
+		token = createToken(ILLEGAL, startPos, identRune...)
 	}
 	return token
 }
@@ -353,25 +404,4 @@ func (lxr *Lexer) readIdentifier() ([]rune, LexerPosition, error) {
 	}
 
 	return ident, startPos, nil
-}
-
-// handleIdentifierToken returns TRUE, FALSE, NULL or ILLEGAL token
-func handleIdentifierToken(lxr *Lexer, r rune) Token {
-	var token Token
-	lxr.backupReader()
-	identRune, startPos, err := lxr.readIdentifier()
-	if err != nil {
-		// Invalid string, return Unknown Token
-		token = createToken(ILLEGAL, startPos, r)
-	} else if string(identRune) == "true" {
-		token = createToken(TRUE, startPos, identRune...)
-	} else if string(identRune) == "false" {
-		token = createToken(FALSE, startPos, identRune...)
-
-	} else if string(identRune) == "null" {
-		token = createToken(NULL, startPos, identRune...)
-	} else {
-		token = createToken(ILLEGAL, startPos, identRune...)
-	}
-	return token
 }

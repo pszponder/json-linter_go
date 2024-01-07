@@ -30,7 +30,7 @@ make build
 cd ./bin
 
 # Execute the application
-./jv <json filepath>
+./jl <json filepath>
 ```
 
 ## Experimenting w/ a Scratch File
@@ -109,22 +109,47 @@ What is a `Token`?
 - Often includes a type (e.g. keyword, identifier, operator, etc.), and an optional attribute value
 - A `token` consists of the combination of a `lexeme`, its `token type` / classification, and can include optional info, such as a value for a string or numerical `lexeme`
 
-Example: Tokenize the following string of characters: `var x = 2 + (4 * 10);`
-- Each row in the table represents a token
+Example: Tokenize the following JSON object:
+```json
+{
+	"hello": "world",
+	"happy": true,
+	"fruits": ["apple", "banana", "orange"],
+	"numbers": [1, 2, 3]
+}
+```
 
-| Lexeme | Classification / Token Type | Value |
-| ------ | --------------------------- | ----- |
-| `var`  | VAR                         | n/a   |
-| `x`    | IDENT                       | n/a   |
-| `=`    | ASSIGN                      | n/a   |
-| `2`    | INT                         | 2     |
-| `+`    | ADD                         | n/a   |
-| `(`    | LPAREN                      | n/a   |
-| `4`    | INT                         | 4     |
-| `*`    | MUL                         | n/a   |
-| `10`   | INT                         | 10    |
-| `)`    | RPAREN                      | n/a   |
-| `;`    | SEMI                        | n/a   |
+| Lexeme    | Classification / Token Type | Value   |
+| --------- | --------------------------- | ------- |
+| `{`       | LBRACE                      | n/a     |
+| `hello`   | STR                         | hello   |
+| `:`       | COLON                       | n/a     |
+| `world`   | STR                         | world   |
+| `,`       | COMMA                       | n/a     |
+| `happy`   | STR                         | happy   |
+| `:`       | COLON                       | n/a     |
+| `true`    | TRUE                        | true    |
+| `,`       | COMMA                       | n/a     |
+| `fruits`  | STR                         | fruits  |
+| `:`       | COLON                       | n/a     |
+| `[`       | LBRACKET                    | n/a     |
+| `apple`   | STR                         | apple   |
+| `,`       | COMMA                       | n/a     |
+| `banana`  | STR                         | banana  |
+| `,`       | COMMA                       | n/a     |
+| `orange`  | STR                         | orange  |
+| `]`       | RBRACKET                    | n/a     |
+| `,`       | COMMA                       | n/a     |
+| `numbers` | STR                         | numbers |
+| `:`       | COLON                       | n/a     |
+| `[`       | LBRACKET                    | n/a     |
+| `1`       | NUM                         | 1       |
+| `,`       | COMMA                       | n/a     |
+| `2`       | NUM                         | 2       |
+| `,`       | COMMA                       | n/a     |
+| `3`       | NUM                         | 3       |
+| `]`       | RBRACKET                    | n/a     |
+| `}`       | RBRACE                      | n/a     |
 
 ### Syntactical Analysis / Parsing
 
