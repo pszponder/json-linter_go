@@ -209,3 +209,4 @@ Here is what an `AST` could look like for the previous example: `var x = 2 + (4 
 - [Aaron Raff - How to Write a Lexer in Go](https://www.aaronraff.dev/blog/how-to-write-a-lexer-in-go)
 - [Bradford Lamson-Scribner - Building a JSON Parser and Query Tool with Go](https://medium.com/@bradford_hamilton/building-a-json-parser-and-query-tool-with-go-8790beee239a)
 - [Thorsten Ball - Writing an Interpreter in Go](https://interpreterbook.com/)
+- [Oguzhan Olguncu - Write Your Own JSON Parsers with Node and Typescript](https://ogzhanolguncu.com/blog/write-your-own-json-parser)
