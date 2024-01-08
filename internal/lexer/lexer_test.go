@@ -100,17 +100,17 @@ func TestGetNextToken(t *testing.T) {
 			reader := strings.NewReader(testCase.input)
 
 			// Create a lexer for testing
-			lexer := CreateLexer(reader)
+			lexer := createLexer(reader)
 
 			// Iterate through expected tokens and compare with actual tokens
 			for _, expectedToken := range testCase.expectedTokens {
-				actualToken := lexer.GetNextToken()
+				actualToken := lexer.getNextToken()
 				assertTokenEquality(t, expectedToken, actualToken)
 			}
 
 			// This if statement is an example of "statement initialization" where we declare a variable within the if statement (actualToken) and use it in the if statement
 			// This variable is only in-scope for the if statement
-			if actualToken := lexer.GetNextToken(); actualToken.TokType != EOF {
+			if actualToken := lexer.getNextToken(); actualToken.TokType != EOF {
 				t.Errorf("Expected EOF, got %v", actualToken.TokType)
 			}
 		})

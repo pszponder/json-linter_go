@@ -23,24 +23,6 @@ type Lexer struct {
 	Pos    LexerPosition
 }
 
-// CreateLexer creates & returns a new lexer instance for lexical analysis of the input from the given reader.
-//
-// The lexer is initialized with a buffered reader for efficient reading and the initial position set to the beginning (line 1, column 0).
-//
-// Parameters:
-//   - reader: An io.Reader representing the source of input for lexical analysis.
-//
-// Returns:
-//   - A pointer to the created lexer.
-func CreateLexer(reader io.Reader) *Lexer {
-	lxrPtr := &Lexer{
-		Reader: bufio.NewReader(reader),
-		Pos:    LexerPosition{Line: 1, Column: 0},
-	}
-
-	return lxrPtr
-}
-
 // Lex is responsible for opening the JSON file specified at the filePath.
 // Returns a slice of Tokens representing the JSON file.
 func Lex(filePath string) []Token {
@@ -53,11 +35,11 @@ func Lex(filePath string) []Token {
 
 	reader := bufio.NewReader(file)
 
-	lxr := CreateLexer(reader)
+	lxr := createLexer(reader)
 
 	var tokens []Token
 	for {
-		tok := lxr.GetNextToken()
+		tok := lxr.getNextToken()
 
 		// Break the loop if EOF is reached
 		if tok.TokType == EOF {
@@ -69,8 +51,26 @@ func Lex(filePath string) []Token {
 	return tokens
 }
 
-// GetNextToken scans the Lexer's input to return the next token
-func (lxr *Lexer) GetNextToken() Token {
+// createLexer creates & returns a new lexer instance for lexical analysis of the input from the given reader.
+//
+// The lexer is initialized with a buffered reader for efficient reading and the initial position set to the beginning (line 1, column 0).
+//
+// Parameters:
+//   - reader: An io.Reader representing the source of input for lexical analysis.
+//
+// Returns:
+//   - A pointer to the created lexer.
+func createLexer(reader io.Reader) *Lexer {
+	lxrPtr := &Lexer{
+		Reader: bufio.NewReader(reader),
+		Pos:    LexerPosition{Line: 1, Column: 0},
+	}
+
+	return lxrPtr
+}
+
+// getNextToken scans the Lexer's input to return the next token
+func (lxr *Lexer) getNextToken() Token {
 	var token Token
 
 	// Keep scanning until a token is found or EOF is reached
