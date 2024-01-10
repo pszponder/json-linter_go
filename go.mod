@@ -1,3 +1,3 @@
-module github.com/pszponder/cc_golang_02_json-linter
+module github.com/pszponder/json-linter_go
 
 go 1.21.5
