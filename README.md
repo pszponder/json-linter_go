@@ -33,22 +33,6 @@ cd ./bin
 ./jl <json filepath>
 ```
 
-## Experimenting w/ a Scratch File
-
-For development purposes, you can create a `./scratch/scratch.go` file and use the `make build/scratch` and `make run/scratch` makefile commands for testing purposes.
-
-Here is what a `scratch.go` file may look like
-```go
-package main
-
-import "fmt"
-
-func main() {
-	// YOUR SCRATCH CODE HERE...
-	fmt.Println("Scratch Works!")
-}
-```
-
 ## Notes / Background
 
 ### JSON Structure
@@ -165,52 +149,6 @@ What is an `Abstract Syntax Tree`?
 - An `AST` is an intermediate representation of source code as a tree structure
 - The `AST` represents the hierarchial structure and semantics of the code
 - A compiler will use an `AST` to compile a language down to machine code.
-
-Here is what an `AST` could look like for the previous example: `var x = 2 + (4 * 10);`
-- The root node is a "VariableDeclaration" representing the declaration of the variable "x."
-- The "dataType" property indicates the data type (in this case, "var").
-- The "declarations" array contains a "VariableDeclarator" node for the variable "x."
-- Inside the "VariableDeclarator," the "init" property contains a "BinaryExpression" representing the initialization of "x."
-- The "BinaryExpression" nodes represent the binary operations, such as addition and multiplication.
-- The "Literal" nodes represent integer literals.
-
-```JSON
-{
-	"type": "VariableDeclaration",
-	"dataType": "var",
-	"declarations": [
-		{
-			"type": "VariableDeclarator",
-			"identifier": "x",
-			"init": {
-				"type": "BinaryExpression",
-				"operator": "=",
-				"left": {
-					"type": "Literal",
-					"value": 2
-				},
-				"right": {
-					"type": "BinaryExpression",
-					"operator": "+",
-					"left": {
-						"type": "Literal",
-						"value": 4
-					},
-					"right": {
-						"type": "BinaryExpression",
-						"operator": "*",
-						"left": {
-							"type": "Literal",
-							"value": 10
-						},
-						"right": null  // Placeholder for the missing operand (could be another literal, identifier, etc.)
-					}
-				}
-			}
-		}
-	]
-}
-```
 
 ## Resources / References
 

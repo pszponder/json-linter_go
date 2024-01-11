@@ -2,9 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 
-	"github.com/pszponder/cc_golang_02_json-linter/internal/args"
-	"github.com/pszponder/cc_golang_02_json-linter/internal/lexer"
+	"github.com/pszponder/json-linter_go/internal/args"
+	"github.com/pszponder/json-linter_go/internal/lexer"
+	"github.com/pszponder/json-linter_go/internal/parser"
 )
 
 func main() {
@@ -14,13 +17,14 @@ func main() {
 
 	// Pass in the file to a lexer in order to generate a token representation of the file (tokenize it)
 	tokens := lexer.Lex(filePath)
-	for _, tok := range tokens {
-		fmt.Println(tok)
+
+	// Parse the tokens and determine if the JSON is valid
+	_, err := parser.ParseJSON(tokens)
+	if err != nil {
+		log.Print("Error: ", err)
+		os.Exit(1)
 	}
 
-	// TODO: Pass the tokens to a parser to generate an AST
-
-	// TODO: Validate the JSON using the generated AST
-
-	// TODO: Output 0 or 1 to stdout depending if parsed file is valid JSON
+	log.Printf("JSON file located in %v is valid", filePath)
+	os.Exit(0)
 }
